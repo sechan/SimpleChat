@@ -1,7 +1,7 @@
 // This file contains material supporting section 3.7 of the textbook:
 // "Object Oriented Software Engineering" and is issued under the open-source
 // license found at www.lloseng.com 
-
+package MainPackage;
 import java.io.*;
 import client.*;
 import common.*;
@@ -73,7 +73,12 @@ public class ClientConsole implements ChatIF
       while (true) 
       {
         message = fromConsole.readLine();
-        client.handleMessageFromClientUI(message);
+        if (!message.substring(0, 1).equals("#")) {
+        	client.handleMessageFromClientUI(message);
+        }else{
+        	//handleCommand method
+        	client.handleConsoleCommand(message);
+        }
       }
     } 
     catch (Exception ex) 
@@ -115,7 +120,16 @@ public class ClientConsole implements ChatIF
     {
       host = "localhost";
     }
-    ClientConsole chat= new ClientConsole(host, DEFAULT_PORT);
+    try
+    {
+    	port = Integer.parseInt(args[1]);
+    }
+    catch(ArrayIndexOutOfBoundsException e)
+    {
+    	port=DEFAULT_PORT;
+    }
+    
+    ClientConsole chat= new ClientConsole(host, port);
     chat.accept();  //Wait for console data
   }
 }

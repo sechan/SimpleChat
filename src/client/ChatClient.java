@@ -7,6 +7,7 @@ package client;
 import ocsf.client.*;
 import common.*;
 import java.io.*;
+import java.util.StringTokenizer; 
 
 /**
  * This class overrides some of the methods defined in the abstract
@@ -41,6 +42,7 @@ public class ChatClient extends AbstractClient
   public ChatClient(String host, int port, ChatIF clientUI) 
     throws IOException 
   {
+	
     super(host, port); //Call the superclass constructor
     this.clientUI = clientUI;
     openConnection();
@@ -78,6 +80,74 @@ public class ChatClient extends AbstractClient
     }
   }
   
+  public void handleConsoleCommand(String message) {
+	  String arg = null;
+	  String command;
+	  StringTokenizer token = new StringTokenizer(message);
+	  command = token.nextToken();
+	  if (token.hasMoreTokens())
+		  arg = token.nextToken();
+	  switch(command) {
+	  case "#quit":
+		  quit();
+		  break;
+	  case "#logoff":
+		  if(isConnected()) {
+			try {
+				closeConnection();
+			} catch (IOException e) {
+				connectionException(e);
+			}
+		  }else{
+			  clientUI.display("Not currently logged in.");
+		  }
+		  break;
+	  case "#setHost":
+		  if(!isConnected()) {
+			  setHost(arg);
+		  }
+		  else {
+			  clientUI.display("***ERROR*** Cannot change host while connected to server");
+		  }
+		  break;
+	  case "#setPort":
+		  if (!isConnected()) {
+			  setPort(Integer.parseInt(arg));
+		  }
+		  else {
+			  clientUI.display("***ERROR*** Cannot change port while connected to server");
+		  }
+		  break;
+	  case "#getHost" :
+		  clientUI.display("Host: " +getHost());
+		  break;
+	  case "#getPort" :
+		  clientUI.display("Port: " + getPort());
+		  break;
+	  case "#login" :
+		  if(!isConnected()) {
+			  try {
+				  clientUI.display("Logging on to " + getHost() + ":" +getPort());
+				  openConnection();
+			  } catch (IOException e) {
+				  connectionException(e);
+			  }
+		  }else{
+			  clientUI.display("Already logged in.");
+		  }
+		  break;
+	  }
+  }
+  
+  public void connectionException(Exception exception) {
+	  clientUI.display("Lost connection to server.\nQuitting...");
+	  this.quit();
+  }
+  
+  public void connectionClosed() {
+	  clientUI.display("***Connection to " + getHost() + ":" + getPort() + " closed.");
+  }
+  
   /**
    * This method terminates the client.
    */
@@ -88,6 +158,7 @@ public class ChatClient extends AbstractClient
       closeConnection();
     }
     catch(IOException e) {}
+    clientUI.display("Quiting SimpleChat client.");
     System.exit(0);
   }
 }
